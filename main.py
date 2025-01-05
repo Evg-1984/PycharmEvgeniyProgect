@@ -31,60 +31,49 @@ if __name__ == '__main__':
         def set_text_size(self, size):
             self.text_size = size
 
+        def set_text(self, text):
+            self.text = text
+
         def get_status(self):
             return self.status
 
-        def render(self, screen):
-            pygame.draw.rect(screen, self.border_color, (self.left,
+        def render(self, ekran):
+            pygame.draw.rect(ekran, self.border_color, (self.left,
                                                          self.top,
                                                          self.width,
                                                          self.height), self.border_size)
-            pygame.draw.rect(screen, self.color, (self.left - self.border_size,
-                                                    self.top - self.border_size,
+            pygame.draw.rect(ekran, self.color, (self.left + self.border_size,
+                                                    self.top + self.border_size,
                                                     self.width - self.border_size * 2,
                                                     self.height - self.border_size * 2), 0)
             font = pygame.font.Font(None, self.text_size)
             text = font.render(self.text, True, (100, 255, 100))
-            text_x = width // 2 - text.get_width() // 2
-            text_y = height // 2 - text.get_height() // 2
-            text_w = text.get_width()
-            text_h = text.get_height()
-            screen.blit(text, (text_x, text_y))
+            text_x = (self.left + self.width) // 2 - text.get_width() // 2
+            text_y = (self.top + self.height) // 2 - text.get_height() // 2
+            ekran.blit(text, (text_x, text_y))
 
-        def get_cell(self, mouse_pos):
-            cell_x = (mouse_pos[0] - self.left) // self.cell_size
-            cell_y = (mouse_pos[1] - self.top) // self.cell_size
-            if (cell_x < 0 or cell_x >= self.width or
-                    cell_y < 0 or cell_y >= self.height):
-                return None
-            return cell_x, cell_y
-
-        def on_click(self, cell):
-            self.board[cell[1]][cell[0]] = 0 if self.board[cell[1]][cell[0]] == 1 else 1
-            for i in range(self.width):
-                self.board[cell[1]][i] = 0 if self.board[cell[1]][i] == 1 else 1
-            for i in range(self.height):
-                self.board[i][cell[0]] = 0 if self.board[i][cell[0]] == 1 else 1
+        def on_click(self):
+            if self.status == True:
+                self.status = False
+            else:
+                self.status = True
 
         def get_click(self, mouse_pos):
-            cell = self.get_cell(mouse_pos)
-            if not cell is None:
-                self.on_click(cell)
+            if (self.left <= mouse_pos[0] <= self.left + self.width
+                    and self.top <= mouse_pos[1] <= self.top + self.height):
+                self.on_click()
+
 
     fps = 60
     clock = pygame.time.Clock()
-    board = Button
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                board.get_click(event.pos)
-        screen.fill((0, 0, 0))
-        board.render(screen)
-        pygame.display.flip()
-
+                board.get_click(pygame.mouse.get_pos())
         clock.tick(fps)
+        board.render(screen)
         pygame.display.flip()
     pygame.quit()
