@@ -4,13 +4,13 @@ import sys
 
 if __name__ == '__main__':
     pygame.init()
-    size = width, height = 800, 400
+    size = width, height = 1920, 1080
     screen = pygame.display.set_mode(size)
 
 
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, group, status=True, text="", text_size=1,
+    def __init__(self, group, status=True, text="", text_size=1, text_color=(0, 0, 0),
                 width=1, height=1, coords=(0, 0), color=(0, 0, 0), border_size=0, border_color=(0, 0, 0)):
             super().__init__(group)
             self.width = width
@@ -24,6 +24,7 @@ class Button(pygame.sprite.Sprite):
             self.status = status
             self.text = text
             self.text_size = text_size
+            self.text_color = text_color
 
     def set_view(self, left, top):
         self.left = left
@@ -63,7 +64,7 @@ class Button(pygame.sprite.Sprite):
                                                  self.width - self.border_size * 2,
                                                  self.height - self.border_size * 2), 0)
         font = pygame.font.Font(None, self.text_size)
-        text = font.render(self.text, True, (100, 255, 100))
+        text = font.render(self.text, True, self.text_color)
         text_x = (self.left + self.width // 2) - text.get_width() // 2
         text_y = (self.top + self.height // 2) - text.get_height() // 2
         ekran.blit(text, (text_x, text_y))
@@ -136,12 +137,12 @@ def terminate():
 
 
 def start_screen():
-    start_bt = Button(buttons, status=False, text="начать", text_size=40,
-                      width=280, height=60, coords=(width // 2 - 140, height // 4 - 30), color=(255, 255, 255),
-                      border_color=(0, 0, 0), border_size=5)
-    end_bt = Button(buttons, status=False, text="выйти", text_size=40,
-                      width=280, height=60, coords=(width // 2 - 140, height - height // 4 - 30), color=(255, 255, 255),
-                      border_color=(0, 0, 0), border_size=5)
+    start_bt = Button(buttons, status=False, text="начать", text_size=200,
+                      width=1080, height=400, coords=(width // 2 - 540, height // 4 - 200), color=(255, 255, 255),
+                      border_color=(0, 0, 0), border_size=25)
+    end_bt = Button(buttons, status=False, text="выйти", text_size=200,
+                      width=1080, height=400, coords=(width // 2 - 540, height - height // 4 - 200), color=(255, 255, 255),
+                      border_color=(0, 0, 0), border_size=25)
 
     while True:
         screen.fill((255, 255, 255))
