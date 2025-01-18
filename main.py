@@ -127,6 +127,8 @@ buttons = pygame.sprite.Group()
 fps = 60
 clock = pygame.time.Clock()
 running = True
+
+
 def terminate():
     pygame.quit()
     sys.exit()
