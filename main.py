@@ -167,7 +167,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        all_sprites.update(event)
+        if event.type == pygame.K_ESCAPE:
+            running = False
+    all_sprites.update()
     clock.tick(fps)
     pygame.display.flip()
 pygame.quit()
