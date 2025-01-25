@@ -1,12 +1,12 @@
 import pygame
 import os
 import sys
+import math
 
 if __name__ == '__main__':
     pygame.init()
     size = width, height = 1920, 1080
     screen = pygame.display.set_mode(size)
-
 
 
 class Button(pygame.sprite.Sprite):
@@ -124,6 +124,32 @@ def load_image(name, colorkey=None):
     return image
 
 
+class Player(pygame.sprite.Sprite):
+    image = load_image("player.jpg")
+
+    def __init__(self, group, hp):
+        super().__init__(group)
+        self.original_image = Player.image
+        self.rect = self.image.get_rect()
+        self.rect.x = width // 2 - self.rect.width // 2
+        self.rect.y = height // 2 - self.rect.height // 2
+        self.hp = hp
+        self.gr = 0
+
+    def shoot(self):
+        pass
+
+    def iframe(self, time):
+        pass
+
+    def update(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        rel_x, rel_y = mouse_x - self.rect.width, mouse_y - self.rect.height
+        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
+        self.image = pygame.transform.rotate(self.original_image, int(angle))
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+
 all_sprites = pygame.sprite.Group()
 buttons = pygame.sprite.Group()
 fps = 60
@@ -162,14 +188,14 @@ def start_screen():
 
 
 start_screen()
+p1 = Player(all_sprites, 100)
 while running:
     screen.fill((0, 0, 0))
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.K_ESCAPE:
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             running = False
     all_sprites.update()
+    all_sprites.draw(screen)
     clock.tick(fps)
     pygame.display.flip()
 pygame.quit()
