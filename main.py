@@ -134,12 +134,15 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.hp = hp
+        self.iframe = False
+        self.timer_interval = 2000
+        self.timer_event_id = pygame.USEREVENT + 1
 
     def shoot(self):
         pass
 
-    def iframe(self, time):
-        pass
+    def get_hit(self):
+        pygame.time.set_timer(self.timer_event_id, self.timer_interval, 1)
 
     def update(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -147,6 +150,8 @@ class Player(pygame.sprite.Sprite):
         angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) + 90
         self.image = pygame.transform.rotate(self.original_image, int(angle))
         self.rect = self.image.get_rect(center=self.rect.center)
+        if not self.iframe:
+            pass
 
 
 class Bullet(pygame.sprite.Sprite):
