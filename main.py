@@ -152,12 +152,15 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
         if not self.iframe:
             pass
+        for event in pygame.event.get():
+            if event.type == pygame.K_w:
+                pass
 
 
 class Bullet(pygame.sprite.Sprite):
     image = load_image("bullet.jpg")
 
-    def __init__(self, group, x, y, width, height):
+    def __init__(self, group, x, y, width, height, speed):
         super().__init__(group)
         self.original_image = Player.image
         self.rect = self.image.get_rect()
@@ -165,7 +168,10 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.y = y
         self.rect.width = width
         self.rect.height = height
+        self.speed = speed
 
+    def update(self):
+        pass
 
 
 all_sprites = pygame.sprite.Group()
@@ -208,7 +214,7 @@ def make_player(w, h, hp):
     return Player(all_sprites, width // 2 - w // 2, height // 2 - h // 2, w, h, hp)
 
 start_screen()
-p1 = make_player(10, 10, 100)
+p1 = make_player(50, 50, 100)
 while running:
     screen.fill((0, 0, 0))
     for event in pygame.event.get():
