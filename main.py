@@ -219,7 +219,7 @@ while running:
     screen.fill((0, 0, 0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-            running = False
+            terminate()
     all_sprites.update()
     all_sprites.draw(screen)
     clock.tick(fps)
