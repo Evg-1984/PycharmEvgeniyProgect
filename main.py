@@ -127,31 +127,58 @@ def load_image(name, colorkey=None):
 class Player(pygame.sprite.Sprite):
     image = load_image("player.jpg")
 
-    def __init__(self, group, hp):
+    def __init__(self, group, x, y, w, h, hp):
         super().__init__(group)
-        self.original_image = Player.image
+        self.original_image = pygame.transform.scale(Player.image, (w, h))
         self.rect = self.image.get_rect()
-        self.rect.x = width // 2 - self.rect.width // 2
-        self.rect.y = height // 2 - self.rect.height // 2
+        self.rect.x = x
+        self.rect.y = y
         self.hp = hp
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        rel_x, rel_y = mouse_x - self.rect.left, mouse_y - self.rect.top
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
-        self.original_image = pygame.transform.rotate(self.original_image, int(angle))
-        self.rect = self.image.get_rect(center=self.rect.center)
+        self.iframe = False
+        self.timer_interval = 2000
+        self.timer_event_id = pygame.USEREVENT + 1
 
     def shoot(self):
         pass
 
-    def iframe(self, time):
-        pass
+    def get_hit(self):
+        pygame.time.set_timer(self.timer_event_id, self.timer_interval, 1)
 
     def update(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        rel_x, rel_y = mouse_x - self.rect.left, mouse_y - self.rect.top
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
+        rel_x, rel_y = mouse_x - self.rect.center[0], mouse_y - self.rect.center[1]
+        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) + 90
         self.image = pygame.transform.rotate(self.original_image, int(angle))
         self.rect = self.image.get_rect(center=self.rect.center)
+
+    def moving(self):
+        key = pygame.key.get_pressed()
+        if key[pygame.K_a]:
+            self.rect.move_ip(-5, 0)
+        if key[pygame.K_d]:
+            self.rect.move_ip(5, 0)
+        if key[pygame.K_w]:
+            self.rect.move_ip(0, -5)
+        if key[pygame.K_s]:
+            self.rect.move_ip(0, 5)
+        print(self.rect.y)
+
+
+class Bullet(pygame.sprite.Sprite):
+    image = load_image("bullet.jpg")
+
+    def __init__(self, group, x, y, width, height, speed):
+        super().__init__(group)
+        self.original_image = Player.image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.rect.width = width
+        self.rect.height = height
+        self.speed = speed
+
+    def update(self):
+        pass
 
 
 all_sprites = pygame.sprite.Group()
@@ -190,14 +217,17 @@ def start_screen():
         pygame.display.flip()
         clock.tick(fps)
 
+def make_player(w, h, hp):
+    return Player(all_sprites, width // 2 - w // 2, height // 2 - h // 2, w, h, hp)
 
 start_screen()
-p1 = Player(all_sprites, 100)
+p1 = make_player(100, 80, 100)
 while running:
     screen.fill((0, 0, 0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-            running = False
+            terminate()
+    p1.moving()
     all_sprites.update()
     all_sprites.draw(screen)
     clock.tick(fps)
