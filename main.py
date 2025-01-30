@@ -140,10 +140,9 @@ class Player(pygame.sprite.Sprite):
         self.shot = 0
 
     def shoot(self):
-        new_bullet = Bullet(bullets, x=(self.rect.bottomright[0] + self.rect.bottomleft[0]) // 2,
-                            y=(self.rect.bottomright[0] + self.rect.bottomleft[0]) // 2, w=15, h=30, speed=30)
-        all_sprites.add(new_bullet)
-
+        make_bullet(x=self.rect.center[0],
+                    y=self.rect.center[1], w=15, h=30, speed=30)
+        self.shot += 20
     def get_hit(self):
         self.hp -= 1
         self.iframe += self.timer_interval
@@ -162,6 +161,8 @@ class Player(pygame.sprite.Sprite):
                 self.get_hit()
         else:
             self.iframe -= 1
+        if self.shot > 0:
+            self.shot -= 1
 
     def moving(self):
         key = pygame.key.get_pressed()
@@ -173,7 +174,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.move_ip(0, -5)
         if key[pygame.K_s]:
             self.rect.move_ip(0, 5)
-        if key[pygame.MOUSEBUTTONDOWN]:
+        if pygame.mouse.get_pressed()[0] and not self.shot:
             self.shoot()
 
 
@@ -264,10 +265,13 @@ def make_player(w, h, hp):
     all_sprites.add(p)
 
 
+def make_bullet(x, y, w, h, speed):
+    b = Bullet(bullets, x, y, w, h, speed)
+    all_sprites.add(b)
+
+
 start_screen()
 make_player(100, 80, 5)
-b1 = Bullet(bullets, 500, 500, 15, 30, 30)
-all_sprites.add(b1)
 
 while running:
     screen.fill((0, 100, 0))
