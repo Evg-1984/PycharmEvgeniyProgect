@@ -2,6 +2,7 @@ import pygame
 import os
 import sys
 import math
+import random
 
 if __name__ == '__main__':
     pygame.init()
@@ -134,7 +135,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.hp = hp
-        self.timer_interval = 180
+        self.timer_interval = 60
         self.iframe = 0
 
     def shoot(self):
@@ -146,15 +147,15 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         if self.hp < 1:
-
             self.kill()
+        self.moving()
         mouse_x, mouse_y = pygame.mouse.get_pos()
         rel_x, rel_y = mouse_x - self.rect.center[0], mouse_y - self.rect.center[1]
         angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) + 90
         self.image = pygame.transform.rotate(self.original_image, int(angle))
         self.rect = self.image.get_rect(center=self.rect.center)
         if not self.iframe:
-            if pygame.sprite.spritecollide(self, enemies, False):
+            if pygame.sprite.spritecollide(self, enemies, True):
                 self.get_hit()
         else:
             self.iframe -= 1
@@ -180,20 +181,37 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.speed = speed
-        self.xspeed = 0
-        self.yspeed = 0
         mouse_x, mouse_y = pygame.mouse.get_pos()
         rel_x, rel_y = mouse_x - self.rect.center[0], mouse_y - self.rect.center[1]
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) + 90
-        self.image = pygame.transform.rotate(self.original_image, int(angle))
+        self.angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) + 90
+        self.image = pygame.transform.rotate(self.original_image, int(self.angle))
         self.rect = self.image.get_rect(center=self.rect.center)
+        self.xspeed = (speed * math.sin(math.radians(self.angle)))
+        self.yspeed = (speed * math.cos(math.radians(self.angle)))
 
     def update(self):
-        self.rect.move_ip(self.rect.bottom)
+        self.rect.move_ip(self.xspeed, self.yspeed)
+        if pygame.sprite.spritecollide(self, players, False):
+            self.kill()
         if (self.rect.center[0] <= -20 or self.rect.center[0] >= width + 20 or
             self.rect.center[1] <= -20 or self.rect.center[1] >= height + 20):
             self.kill()
+
+
+class Monster(pygame.sprite.Sprite):
+    image = load_image("bullet.jpg")
+
+    def __init__(self, group, x, y, w, h, hp, target):
+        super().__init__(group)
+        self.original_image = pygame.transform.scale(Bullet.image, (w, h))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.hp = hp
+        self.target = target
+
+    def update(self):
+        pass
 
 
 all_sprites = pygame.sprite.Group()
@@ -235,23 +253,24 @@ def start_screen():
         pygame.display.flip()
         clock.tick(fps)
 
+
 def make_player(w, h, hp):
-    return Player(all_sprites, width // 2 - w // 2, height // 2 - h // 2, w, h, hp)
+    p = Player(players, width // 2 - w // 2, height // 2 - h // 2, w, h, hp)
+    all_sprites.add(p)
+
 
 start_screen()
-p1 = make_player(100, 80, 3)
-b1 = Bullet(bullets, 500, 500, 30, 60, 0)
+make_player(100, 80, 5)
+b1 = Bullet(bullets, 500, 500, 15, 30, 20)
+all_sprites.add(b1)
+
 while running:
-    screen.fill((0, 0, 0))
+    screen.fill((0, 100, 0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             terminate()
-    p1.moving()
     all_sprites.update()
     all_sprites.draw(screen)
-    bullets.update()
-    bullets.draw(screen)
-    pygame.sprite.groupcollide(enemies, bullets, False, True)
     clock.tick(fps)
     pygame.display.flip()
 pygame.quit()
