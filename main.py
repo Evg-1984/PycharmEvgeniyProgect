@@ -137,9 +137,12 @@ class Player(pygame.sprite.Sprite):
         self.hp = hp
         self.timer_interval = 60
         self.iframe = 0
+        self.shot = 0
 
     def shoot(self):
-        pass
+        new_bullet = Bullet(bullets, x=(self.rect.bottomright[0] + self.rect.bottomleft[0]) // 2,
+                            y=(self.rect.bottomright[0] + self.rect.bottomleft[0]) // 2, w=15, h=30, speed=30)
+        all_sprites.add(new_bullet)
 
     def get_hit(self):
         self.hp -= 1
@@ -170,6 +173,8 @@ class Player(pygame.sprite.Sprite):
             self.rect.move_ip(0, -5)
         if key[pygame.K_s]:
             self.rect.move_ip(0, 5)
+        if key[pygame.MOUSEBUTTONDOWN]:
+            self.shoot()
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -191,7 +196,7 @@ class Bullet(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.move_ip(self.xspeed, self.yspeed)
-        if pygame.sprite.spritecollide(self, players, False):
+        if pygame.sprite.spritecollide(self, enemies, False):
             self.kill()
         if (self.rect.center[0] <= -20 or self.rect.center[0] >= width + 20 or
             self.rect.center[1] <= -20 or self.rect.center[1] >= height + 20):
@@ -261,7 +266,7 @@ def make_player(w, h, hp):
 
 start_screen()
 make_player(100, 80, 5)
-b1 = Bullet(bullets, 500, 500, 15, 30, 20)
+b1 = Bullet(bullets, 500, 500, 15, 30, 30)
 all_sprites.add(b1)
 
 while running:
