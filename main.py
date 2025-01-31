@@ -3,10 +3,13 @@ import os
 import sys
 import math
 import random
+import tkinter as tk
 
 if __name__ == '__main__':
     pygame.init()
-    size = width, height = 1920, 1080
+    root = tk.Tk()
+    size = width, height = root.winfo_screenwidth(), root.winfo_screenheight()
+    root.destroy()
     screen = pygame.display.set_mode(size)
 
 
@@ -254,10 +257,10 @@ def terminate():
 
 def start_screen():
     start_bt = Button(buttons, status=False, text="начать", text_size=200,
-                      width=1080, height=400, coords=(width // 2 - 540, height // 4 - 200), color=(255, 255, 255),
+                      width=width // 2, height=height // 3, coords=(width // 2 - width // 4, height // 4 - height // 6), color=(255, 255, 255),
                       border_color=(0, 0, 0), border_size=25)
     end_bt = Button(buttons, status=False, text="выйти", text_size=200,
-                      width=1080, height=400, coords=(width // 2 - 540, height - height // 4 - 200), color=(255, 255, 255),
+                      width=width // 2, height=height // 3, coords=(width // 2 - width // 4, height - height // 6 - 200), color=(255, 255, 255),
                       border_color=(0, 0, 0), border_size=25)
 
     while True:
@@ -290,23 +293,23 @@ def make_monster(value):
     for i in range(value):
         a = random.choice([True, False])
         if a:
-            b = random.randrange(-100, 2080)
-            c = random.choice([-100, 1180])
+            b = random.randrange(-100, width + 100)
+            c = random.choice([-100, height + 100])
         else:
-            b = random.choice([-100, 2080])
-            c = random.randrange(-100, 1180)
+            b = random.choice([-100, width + 100])
+            c = random.randrange(-100, height + 100)
         m = Monster(enemies, b, c, 70, 40, 2, 8, p)
         all_sprites.add(m)
 
 
 def make_hp_bar(color, x, y, w, h, step, value):
     one_width = (w - step * (value - 1)) // value
-    for i in value:
-        pygame.draw.rect(screen, color, (x + (one_width + step) * i, ))
+    for i in range(value):
+        pygame.draw.rect(screen, color, (x + (one_width + step) * i, y, one_width, h))
 
 
 start_screen()
-p = make_player(100, 80, 5)
+p = make_player(width // 15, (width // 15) * 0.8, 5)
 all_sprites.add(p)
 monster_timer = 0
 monster_interval = 180
@@ -318,6 +321,7 @@ while running:
             terminate()
     all_sprites.update()
     all_sprites.draw(screen)
+    make_hp_bar((255, 0, 0), 50, 50, 50 * p.hp - 10, 30, 10, p.hp)
     clock.tick(fps)
     if not monster_timer:
         make_monster(2)
