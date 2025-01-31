@@ -8,7 +8,8 @@ from pygame import mixer
 
 mixer.init()
 mixer.music.load("song.mp3")
-mixer.music.set_volume(0.5)
+mixer.music.set_volume(0.2)
+channels = 0
 
 if __name__ == '__main__':
     pygame.init()
@@ -150,8 +151,12 @@ class Player(pygame.sprite.Sprite):
         self.timer_interval = 60
         self.iframe = 0
         self.shot = 0
+        global channels
+        self.sound = pygame.mixer.Channel(channels)
+        channels += 1
 
     def shoot(self):
+        self.sound.play("shot.mp3")
         make_bullet(x=self.rect.center[0],
                     y=self.rect.center[1], w=15, h=30, speed=30)
         self.shot += 20
@@ -258,7 +263,8 @@ class Monster(pygame.sprite.Sprite):
         self.rect.move_ip(xspeed, yspeed)
 
     def kill(self):
-        all_sprites.add(AnimatedSprite(load_image("pygame-8-1.png"), 8, 2, self.rect.x, self.rect.y))
+        global score
+        score += 20
         super().kill()
 
 
@@ -285,8 +291,8 @@ def start_screen():
     end_bt = Button(buttons, status=False, text="выйти", text_size=200,
                       width=width // 2, height=height // 3, coords=(width // 2 - width // 4, height - height // 6 - 200), color=(255, 255, 255),
                       border_color=(0, 0, 0), border_size=25)
-
-    while True:
+    run = True
+    while run:
         screen.fill((255, 255, 255))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -296,11 +302,12 @@ def start_screen():
 
         buttons.update(screen)
         if start_bt.get_status():
-            return
+            run = False
         if end_bt.get_status():
             terminate()
         pygame.display.flip()
         clock.tick(fps)
+    gameplay()
 
 
 def make_player(w, h, hp):
@@ -312,7 +319,7 @@ def make_bullet(x, y, w, h, speed):
     all_sprites.add(b)
 
 
-def make_monster(value):
+def make_monster(value, target):
     for i in range(value):
         a = random.choice([True, False])
         if a:
@@ -321,7 +328,7 @@ def make_monster(value):
         else:
             b = random.choice([-100, width + 100])
             c = random.randrange(-100, height + 100)
-        m = Monster(enemies, b, c, 70, 40, 2, 8, p)
+        m = Monster(enemies, b, c, 70, 40, 2, 8, target)
         all_sprites.add(m)
 
 
@@ -337,31 +344,40 @@ def make_shield(color, x, y, w, h, charge):
         pygame.draw.rect(screen, color, (x, y, w * charge, h))
 
 
-
 start_screen()
-p = make_player(width // 15, (width // 15) * 0.8, 5)
-all_sprites.add(p)
-monster_timer = 120
-monster_interval = 60
 score = 0
-mixer.music.play()
-while running:
-    screen.fill((0, 100, 0))
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-            terminate()
-    all_sprites.update()
-    all_sprites.draw(screen)
-    make_hp_bar((255, 0, 0), 50, 50, 50 * p.hp - 10, 30, 10, p.hp)
-    make_shield((0, 100, 255), 50, 100, 240, 10, p.iframe / p.timer_interval)
-    clock.tick(fps)
-    if not monster_timer:
-        wave = random.choice([1, 1, 1, 2, 2, 2, 3, 3, 4])
-        make_monster(wave)
-        monster_timer += monster_interval * wave
-    monster_timer -= 1
-    pygame.display.flip()
 
-mixer.music.stop()
+
+def gameplay():
+    global score
+    p = make_player(width // 15, (width // 15) * 0.8, 5)
+    all_sprites.add(p)
+    monster_timer = 120
+    monster_interval = 60
+    score = 0
+    mixer.music.play()
+    while running:
+        screen.fill((0, 100, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                terminate()
+        all_sprites.update()
+        all_sprites.draw(screen)
+        make_hp_bar((255, 0, 0), 50, 50, 50 * p.hp - 10, 30, 10, p.hp)
+        make_shield((0, 100, 255), 50, 100, 240, 10, p.iframe / p.timer_interval)
+        clock.tick(fps)
+        if not monster_timer:
+            wave = random.choice([1, 1, 1, 2, 2, 2, 3, 3, 4])
+            make_monster(wave, p)
+            monster_timer += monster_interval * wave
+        monster_timer -= 1
+        pygame.display.flip()
+    while True:
+        screen.fill((0, 100, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                terminate()
+    mixer.music.stop()
+
 
 pygame.quit()
