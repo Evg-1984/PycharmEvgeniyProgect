@@ -155,6 +155,14 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.moving()
+        if self.rect.centerx <= 0:
+            self.rect.centerx = 1
+        if self.rect.centerx > width:
+            self.rect.centerx = width
+        if self.rect.centery <= 0:
+            self.rect.centery = 1
+        if self.rect.centery > height:
+            self.rect.centery = height
         mouse_x, mouse_y = pygame.mouse.get_pos()
         rel_x, rel_y = mouse_x - self.rect.center[0], mouse_y - self.rect.center[1]
         angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) + 90
