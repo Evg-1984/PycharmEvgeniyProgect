@@ -97,6 +97,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.rect.move(x, y)
+        self.timer = rows * columns
 
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
@@ -108,8 +109,11 @@ class AnimatedSprite(pygame.sprite.Sprite):
                     frame_location, self.rect.size)))
 
     def update(self):
+        if not self.timer:
+            self.kill()
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
+        self.timer -= 1
 
 
 def load_image(name, colorkey=None):
@@ -147,6 +151,7 @@ class Player(pygame.sprite.Sprite):
                     y=self.rect.center[1], w=15, h=30, speed=30)
         self.shot += 20
     def get_hit(self):
+        global running
         self.hp -= 1
         if self.hp < 1:
             running = False
@@ -247,6 +252,10 @@ class Monster(pygame.sprite.Sprite):
         yspeed = (self.speed * math.cos(math.radians(self.angle)))
         self.rect.move_ip(xspeed, yspeed)
 
+    def kill(self):
+        all_sprites.add(AnimatedSprite(load_image("pygame-8-1.png"), 8, 2, self.rect.x, self.rect.y))
+        super().kill()
+
 
 all_sprites = pygame.sprite.Group()
 buttons = pygame.sprite.Group()
@@ -311,17 +320,23 @@ def make_monster(value):
 
 
 def make_hp_bar(color, x, y, w, h, step, value):
-    one_width = (w - step * (value - 1)) // value
-    for i in range(value):
-        pygame.draw.rect(screen, color, (x + (one_width + step) * i, y, one_width, h))
+    if value:
+        one_width = (w - step * (value - 1)) // value
+        for i in range(value):
+            pygame.draw.rect(screen, color, (x + (one_width + step) * i, y, one_width, h))
+
+
+def make_shield(color, x, y, w, h, charge):
+    if charge:
+        pygame.draw.rect(screen, color, (x, y, w * charge, h))
+
 
 
 start_screen()
 p = make_player(width // 15, (width // 15) * 0.8, 5)
 all_sprites.add(p)
-monster_timer = 0
-monster_interval = 180
-
+monster_timer = 120
+monster_interval = 60
 while running:
     screen.fill((0, 100, 0))
     for event in pygame.event.get():
@@ -330,10 +345,12 @@ while running:
     all_sprites.update()
     all_sprites.draw(screen)
     make_hp_bar((255, 0, 0), 50, 50, 50 * p.hp - 10, 30, 10, p.hp)
+    make_shield((0, 100, 255), 50, 100, 240, 10, p.iframe / p.timer_interval)
     clock.tick(fps)
     if not monster_timer:
-        make_monster(2)
-        monster_timer += monster_interval
+        wave = random.choice([1, 1, 1, 2, 2, 2, 3, 3, 4])
+        make_monster(wave)
+        monster_timer += monster_interval * wave
     monster_timer -= 1
     pygame.display.flip()
 pygame.quit()
