@@ -139,7 +139,7 @@ def load_image(name, colorkey=None):
 
 
 class Player(pygame.sprite.Sprite):
-    image = load_image("player.jpg")
+    image = load_image("player.png", -1)
 
     def __init__(self, group, x, y, w, h, hp):
         super().__init__(group)
@@ -205,7 +205,7 @@ class Player(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
-    image = load_image("bullet.jpg")
+    image = load_image("bullet.png")
 
     def __init__(self, group, x, y, w, h, speed):
         super().__init__(group)
@@ -235,7 +235,7 @@ class Bullet(pygame.sprite.Sprite):
 
 
 class Monster(pygame.sprite.Sprite):
-    image = load_image("monster.jpg")
+    image = load_image("monster.png", -1)
 
     def __init__(self, group, x, y, w, h, hp, speed, target):
         super().__init__(group)
@@ -385,10 +385,14 @@ def gameplay():
                 terminate()
             end_bt.get_click(event)
         end_bt.update(screen)
-        font = pygame.font.Font(None, 50)
+        font = pygame.font.Font(None, 200)
         text = font.render(f"{score}", True, (255, 255, 255))
         text_x = width // 2 - text.get_width() // 2
-        text_y = height // 2 - text.get_height() // 2 - height // 6
+        text_y = height // 2 - text.get_height() // 2 - height // 8
+        screen.blit(text, (text_x, text_y))
+        text = font.render(f"счёт", True, (255, 255, 255))
+        text_x = width // 2 - text.get_width() // 2
+        text_y = height // 2 - text.get_height() // 2 - height // 3
         screen.blit(text, (text_x, text_y))
         if end_bt.get_status():
             break
