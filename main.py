@@ -4,6 +4,11 @@ import sys
 import math
 import random
 import tkinter as tk
+from pygame import mixer
+
+mixer.init()
+mixer.music.load("song.mp3")
+mixer.music.set_volume(0.5)
 
 if __name__ == '__main__':
     pygame.init()
@@ -268,6 +273,7 @@ running = True
 
 
 def terminate():
+    mixer.music.stop()
     pygame.quit()
     sys.exit()
 
@@ -337,6 +343,8 @@ p = make_player(width // 15, (width // 15) * 0.8, 5)
 all_sprites.add(p)
 monster_timer = 120
 monster_interval = 60
+score = 0
+mixer.music.play()
 while running:
     screen.fill((0, 100, 0))
     for event in pygame.event.get():
@@ -353,4 +361,7 @@ while running:
         monster_timer += monster_interval * wave
     monster_timer -= 1
     pygame.display.flip()
+
+mixer.music.stop()
+
 pygame.quit()
