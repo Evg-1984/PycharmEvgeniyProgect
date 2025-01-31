@@ -7,7 +7,7 @@ import tkinter as tk
 from pygame import mixer
 
 mixer.init()
-mixer.music.load("song.mp3")
+mixer.music.load("data/song.mp3")
 mixer.music.set_volume(0.2)
 channels = 0
 
@@ -156,15 +156,14 @@ class Player(pygame.sprite.Sprite):
         channels += 1
 
     def shoot(self):
-        self.sound.play("shot.mp3")
+        self.sound.play(pygame.mixer.Sound("data/shot.mp3"))
         make_bullet(x=self.rect.center[0],
                     y=self.rect.center[1], w=15, h=30, speed=30)
         self.shot += 20
     def get_hit(self):
-        global running
         self.hp -= 1
         if self.hp < 1:
-            running = False
+
             self.kill()
         self.iframe += self.timer_interval
 
@@ -344,7 +343,6 @@ def make_shield(color, x, y, w, h, charge):
         pygame.draw.rect(screen, color, (x, y, w * charge, h))
 
 
-start_screen()
 score = 0
 
 
@@ -355,12 +353,15 @@ def gameplay():
     monster_timer = 120
     monster_interval = 60
     score = 0
+    running = True
     mixer.music.play()
     while running:
         screen.fill((0, 100, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 terminate()
+        if not players.sprites():
+            running = False
         all_sprites.update()
         all_sprites.draw(screen)
         make_hp_bar((255, 0, 0), 50, 50, 50 * p.hp - 10, 30, 10, p.hp)
@@ -372,12 +373,29 @@ def gameplay():
             monster_timer += monster_interval * wave
         monster_timer -= 1
         pygame.display.flip()
+    all_sprites.empty()
+    end_bt = Button(buttons, status=False, text="меню", text_size=200,
+                    width=width // 2, height=height // 3, coords=(width // 2 - width // 4, height - height // 6 - 200),
+                    color=(0, 0, 0),
+                    border_color=(255, 255, 255), border_size=25, text_color=(255, 255, 255))
     while True:
-        screen.fill((0, 100, 0))
+        screen.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 terminate()
+            end_bt.get_click(event)
+        end_bt.update(screen)
+        font = pygame.font.Font(None, 50)
+        text = font.render(f"{score}", True, (255, 255, 255))
+        text_x = width // 2 - text.get_width() // 2
+        text_y = height // 2 - text.get_height() // 2 - height // 6
+        screen.blit(text, (text_x, text_y))
+        if end_bt.get_status():
+            break
+        pygame.display.flip()
     mixer.music.stop()
+    start_screen()
 
 
+start_screen()
 pygame.quit()
