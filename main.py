@@ -145,21 +145,22 @@ class Player(pygame.sprite.Sprite):
         self.shot += 20
     def get_hit(self):
         self.hp -= 1
+        if self.hp < 1:
+            running = False
+            self.kill()
         self.iframe += self.timer_interval
 
     def update(self):
-        if self.hp < 1:
-            self.kill()
         self.moving()
         mouse_x, mouse_y = pygame.mouse.get_pos()
         rel_x, rel_y = mouse_x - self.rect.center[0], mouse_y - self.rect.center[1]
         angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) + 90
         self.image = pygame.transform.rotate(self.original_image, int(angle))
         self.rect = self.image.get_rect(center=self.rect.center)
-        if not self.iframe:
-            if pygame.sprite.spritecollide(self, enemies, True):
+        if pygame.sprite.spritecollide(self, enemies, True):
+            if not self.iframe:
                 self.get_hit()
-        else:
+        if self.iframe > 0:
             self.iframe -= 1
         if self.shot > 0:
             self.shot -= 1
@@ -194,30 +195,46 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
         self.xspeed = (speed * math.sin(math.radians(self.angle)))
         self.yspeed = (speed * math.cos(math.radians(self.angle)))
+        self.killcounter = False
 
     def update(self):
-        self.rect.move_ip(self.xspeed, self.yspeed)
-        if pygame.sprite.spritecollide(self, enemies, False):
-            self.kill()
         if (self.rect.center[0] <= -20 or self.rect.center[0] >= width + 20 or
             self.rect.center[1] <= -20 or self.rect.center[1] >= height + 20):
             self.kill()
+        if self.killcounter:
+            self.kill()
+        self.rect.move_ip(self.xspeed, self.yspeed)
+        if pygame.sprite.spritecollide(self, enemies, False):
+            self.killcounter = True
+
 
 
 class Monster(pygame.sprite.Sprite):
-    image = load_image("bullet.jpg")
+    image = load_image("monster.jpg")
 
-    def __init__(self, group, x, y, w, h, hp, target):
+    def __init__(self, group, x, y, w, h, hp, speed, target):
         super().__init__(group)
-        self.original_image = pygame.transform.scale(Bullet.image, (w, h))
+        self.original_image = pygame.transform.scale(Monster.image, (w, h))
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.hp = hp
+        self.speed = speed
         self.target = target
 
     def update(self):
-        pass
+        if pygame.sprite.spritecollide(self, bullets, False):
+            self.hp -= 1
+        if self.hp <= 0:
+            self.kill()
+        tar_x, tar_y = self.target.rect.center
+        rel_x, rel_y = tar_x - self.rect.center[0], tar_y - self.rect.center[1]
+        self.angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) + 90
+        self.image = pygame.transform.rotate(self.original_image, int(self.angle))
+        self.rect = self.image.get_rect(center=self.rect.center)
+        xspeed = (self.speed * math.sin(math.radians(self.angle)))
+        yspeed = (self.speed * math.cos(math.radians(self.angle)))
+        self.rect.move_ip(xspeed, yspeed)
 
 
 all_sprites = pygame.sprite.Group()
@@ -261,8 +278,7 @@ def start_screen():
 
 
 def make_player(w, h, hp):
-    p = Player(players, width // 2 - w // 2, height // 2 - h // 2, w, h, hp)
-    all_sprites.add(p)
+    return Player(players, width // 2 - w // 2, height // 2 - h // 2, w, h, hp)
 
 
 def make_bullet(x, y, w, h, speed):
@@ -270,8 +286,30 @@ def make_bullet(x, y, w, h, speed):
     all_sprites.add(b)
 
 
+def make_monster(value):
+    for i in range(value):
+        a = random.choice([True, False])
+        if a:
+            b = random.randrange(-100, 2080)
+            c = random.choice([-100, 1180])
+        else:
+            b = random.choice([-100, 2080])
+            c = random.randrange(-100, 1180)
+        m = Monster(enemies, b, c, 70, 40, 2, 8, p)
+        all_sprites.add(m)
+
+
+def make_hp_bar(color, x, y, w, h, step, value):
+    one_width = (w - step * (value - 1)) // value
+    for i in value:
+        pygame.draw.rect(screen, color, (x + (one_width + step) * i, ))
+
+
 start_screen()
-make_player(100, 80, 5)
+p = make_player(100, 80, 5)
+all_sprites.add(p)
+monster_timer = 0
+monster_interval = 180
 
 while running:
     screen.fill((0, 100, 0))
@@ -281,5 +319,9 @@ while running:
     all_sprites.update()
     all_sprites.draw(screen)
     clock.tick(fps)
+    if not monster_timer:
+        make_monster(2)
+        monster_timer += monster_interval
+    monster_timer -= 1
     pygame.display.flip()
 pygame.quit()
