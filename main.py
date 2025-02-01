@@ -6,8 +6,9 @@ import random
 import tkinter as tk
 from pygame import mixer
 
+
 mixer.init()
-mixer.music.load("data/song.mp3")
+mixer.music.load("data/Electrolise.mp3")
 mixer.music.set_volume(0.2)
 channels = 0
 
@@ -156,7 +157,7 @@ class Player(pygame.sprite.Sprite):
         channels += 1
 
     def shoot(self):
-        self.sound.play(pygame.mixer.Sound("data/shot.mp3"))
+        self.sound.play(pygame.mixer.Sound("data/shot.wav"))
         make_bullet(x=self.rect.center[0],
                     y=self.rect.center[1],
                     w=15, h=30, speed=30)
