@@ -158,7 +158,8 @@ class Player(pygame.sprite.Sprite):
     def shoot(self):
         self.sound.play(pygame.mixer.Sound("data/shot.mp3"))
         make_bullet(x=self.rect.center[0],
-                    y=self.rect.center[1], w=15, h=30, speed=30)
+                    y=self.rect.center[1],
+                    w=15, h=30, speed=30)
         self.shot += 20
     def get_hit(self):
         self.hp -= 1
